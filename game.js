@@ -36,9 +36,49 @@ game.state.add('play',{
             state.game.world.height,image,'', state.background);
           bg.tileScale.setTo(4,4);
         });
+      var monsterData = [
+      {name: 'Aerocephal', image: 'aerocephal'},
+      {name: 'Arcana Drake', image: 'arcana_drake'},
+      {name: 'Aurum Drakueli', image: 'aurum-drakueli'},
+      {name: 'Bat', image: 'bat'},
+      {name: 'Daemarbora', image: 'daemarbora'},
+      {name: 'Deceleon', image: 'deceleon'},
+      {name: 'Demonic Essence', image: 'demonic_essence'},
+      {name: 'Dune Crawler', image: 'dune_crawler'},
+      {name: 'Green Slime', image: 'green_slime'},
+      {name: 'Nagaruda', image: 'nagaruda'},
+      {name: 'Rat', image: 'rat'},
+      {name: 'Scorpion', image: 'scorpion'},
+      {name: 'Skeleton', image: 'skeleton'},
+      {name: 'Snake', image: 'snake'},
+      {name: 'Spider', image: 'spider'},
+      {name: 'Stygian Lizard', image: 'stygian_lizard'}
+];
+    this.monsters = this.game.add.group();
+
+var monster;
+monsterData.forEach(function(data) {
+    monster = state.monsters.create(1000, state.game.world.centerY, data.image);
+    monster.anchor.setTo(0.5);
+    monster.details = data;
+ 
+    monster.inputEnabled = true;
+    monster.events.onInputDown.add(state.onClickMonster, state);
+});  
+    this.currentMonster = this.monsters.getRandom();
+    this.currentMonster.position.set(this.game.world.centerX + 100, this.game.worl
+    .centerY);    
   },
   render: function(){
       game.debug.text('Adventure Awaits!', 250, 290);
+      game.debug.text(this.currentMonster.details.name,
+        this.game.world.centerX - this.currentMonster.width / 2,
+        this.game.world.centerY + this.currentMonster.height / 2);
+  },
+  onClickMonster: function(){
+    this.currentMonster.position.set(1000, this.game.world.centerY);
+    this.currentMonster = this.monsters.getRandom();
+    this.currentMonster.position.set(this.game.world.centerX + 100, this.game.world.centerY)
   }
 });
 
