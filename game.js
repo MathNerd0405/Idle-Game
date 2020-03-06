@@ -7,7 +7,7 @@ game.state.add('play',{
     this.game.load.image('forest-lights', 'assets/parallax_forest_pack/layers/parallax-forest-lights.png');
     this.game.load.image('forest-middle', 'assets/parallax_forest_pack/layers/parallax-forest-middle-trees.png');
     this.game.load.image('forest-front', 'assets/parallax_forest_pack/layers/parallax-forest-front-trees.png');
-        this.game.load.image('aerocephal', 'assets/allacrost_enemy_sprites/aerocephal.png');
+    this.game.load.image('aerocephal', 'assets/allacrost_enemy_sprites/aerocephal.png');
     this.game.load.image('arcana_drake', 'assets/allacrost_enemy_sprites/arcana_drake.png');
     this.game.load.image('aurum-drakueli', 'assets/allacrost_enemy_sprites/aurum-drakueli.png');
     this.game.load.image('bat', 'assets/allacrost_enemy_sprites/bat.png');
@@ -23,6 +23,7 @@ game.state.add('play',{
     this.game.load.image('snake', 'assets/allacrost_enemy_sprites/snake.png');
     this.game.load.image('spider', 'assets/allacrost_enemy_sprites/spider.png');
     this.game.load.image('stygian_lizard', 'assets/allacrost_enemy_sprites/stygian_lizard.png');
+    this.game.load.image('gold_coin', 'assets/496_RPG_icons/I_GoldCoin.png');
   },
   create: function(){
       var skeletonSprite = game.add.sprite(450, 290, 'skeleton');
@@ -111,6 +112,16 @@ if (dmgText) {
     dmgText.alpha = 1;
     dmgText.tween.start();
 }
+   this.coins = this.add.group();
+   this.coins.createMultiple(50, 'gold_coin', '', false);
+   this.coins.setAll('inputEnabled', true);
+   this.coins.setAll('goldValue', 1);
+   this.coins.callAll('events.onInputDown.add', 'events.onInputDown', this.onClickCoin, this);
+   this.playerGoldText = this.add.text(30, 30, 'Gold: ' + this.player.gold, {
+    font: '24px Arial Black',
+    fill: '#fff',
+    strokeThickness: 4
+});
   },
   render: function(){
       game.debug.text('Adventure Awaits!', 250, 290);
@@ -123,7 +134,32 @@ if (dmgText) {
     this.currentMonster = this.monsters.getRandom();
     this.currentMonster.position.set(this.game.world.centerX + 100, this.game.world.centerY)
     this.currentMonster.damage(this.player.clickDmg);
-  }
+  },
+   onClickCoin: function(coin) {
+    // give the player gold
+    this.player.gold += coin.goldValue;
+    // update UI
+    this.playerGoldText.text = 'Gold: ' + this.player.gold;
+    // remove the coin
+    coin.kill();
+    this.game.time.events.add(Phaser.Timer.SECOND * 3, this.onClickCoin, this, coin);
+    if (!coin.alive) {
+        return;
+    }
+},
+onKilledMonster: function(monster) {
+    monster.position.set(1000, this.game.world.centerY);
+    this.currentMonster = this.monsters.getRandom();
+    this.currentMonster.revive(this.currentMonster.maxHealth);
+    var coin;
+    coin = this.coins.getFirstExists(false);
+    coin.reset(this.game.world.centerX + this.game.rnd.integerInRange(-100, 100), this.game.world.centerY);
+    coin.goldValue = 1;
+},
+onRevivedMonster: function(monster) {
+    monster.position.set(this.game.world.centerX + 100, this.game.world.centerY);
+    this.monsterNameText.text = monster.details.name;
+    this.monsterHealthText.text = monster.health + 'HP';
+},
 });
-
 game.state.start('play');
