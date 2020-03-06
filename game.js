@@ -36,23 +36,23 @@ game.state.add('play',{
             state.game.world.height,image,'', state.background);
           bg.tileScale.setTo(4,4);
         });
-      var monsterData = [
-      {name: 'Aerocephal', image: 'aerocephal'},
-      {name: 'Arcana Drake', image: 'arcana_drake'},
-      {name: 'Aurum Drakueli', image: 'aurum-drakueli'},
-      {name: 'Bat', image: 'bat'},
-      {name: 'Daemarbora', image: 'daemarbora'},
-      {name: 'Deceleon', image: 'deceleon'},
-      {name: 'Demonic Essence', image: 'demonic_essence'},
-      {name: 'Dune Crawler', image: 'dune_crawler'},
-      {name: 'Green Slime', image: 'green_slime'},
-      {name: 'Nagaruda', image: 'nagaruda'},
-      {name: 'Rat', image: 'rat'},
-      {name: 'Scorpion', image: 'scorpion'},
-      {name: 'Skeleton', image: 'skeleton'},
-      {name: 'Snake', image: 'snake'},
-      {name: 'Spider', image: 'spider'},
-      {name: 'Stygian Lizard', image: 'stygian_lizard'}
+var monsterData = [
+    {name: 'Aerocephal',        image: 'aerocephal',        maxHealth: 10},
+    {name: 'Arcana Drake',      image: 'arcana_drake',      maxHealth: 20},
+    {name: 'Aurum Drakueli',    image: 'aurum-drakueli',    maxHealth: 30},
+    {name: 'Bat',               image: 'bat',               maxHealth: 5},
+    {name: 'Daemarbora',        image: 'daemarbora',        maxHealth: 10},
+    {name: 'Deceleon',          image: 'deceleon',          maxHealth: 10},
+    {name: 'Demonic Essence',   image: 'demonic_essence',   maxHealth: 15},
+    {name: 'Dune Crawler',      image: 'dune_crawler',      maxHealth: 8},
+    {name: 'Green Slime',       image: 'green_slime',       maxHealth: 3},
+    {name: 'Nagaruda',          image: 'nagaruda',          maxHealth: 13},
+    {name: 'Rat',               image: 'rat',               maxHealth: 2},
+    {name: 'Scorpion',          image: 'scorpion',          maxHealth: 2},
+    {name: 'Skeleton',          image: 'skeleton',          maxHealth: 6},
+    {name: 'Snake',             image: 'snake',             maxHealth: 4},
+    {name: 'Spider',            image: 'spider',            maxHealth: 4},
+    {name: 'Stygian Lizard',    image: 'stygian_lizard',    maxHealth: 20}
 ];
     this.monsters = this.game.add.group();
 
@@ -64,10 +64,53 @@ monsterData.forEach(function(data) {
  
     monster.inputEnabled = true;
     monster.events.onInputDown.add(state.onClickMonster, state);
+    monster.health = monster.maxHealth = data.maxHealth;
+    monster.events.onKilled.add(state.onKilledMonster, state);
+    monster.events.onRevived.add(state.onRevivedMonster, state);
 });  
     this.currentMonster = this.monsters.getRandom();
     this.currentMonster.position.set(this.game.world.centerX + 100, this.game.worl
     .centerY);    
+    this.monsterInfoUI = this.game.add.group();
+    this.monsterInfoUI.position.setTo(this.currentMonster.x - 220, this.currentMonster.y + 120);
+    this.monsterNameText = this.monsterInfoUI.addChild(this.game.add.text(0, 0, this.currentMonster.details.name, {
+    font: '48px Arial Black',
+    fill: '#fff',
+    strokeThickness: 4
+}));
+    this.monsterHealthText = this.monsterInfoUI.addChild(this.game.add.text(0, 80, this.currentMonster.health + ' HP', {
+    font: '32px Arial Black',
+    fill: '#ff0000',
+    strokeThickness: 4
+}));
+this.dmgTextPool = this.add.group();
+var dmgText;
+for (var d=0; d<50; d++) {
+    dmgText = this.add.text(0, 0, '1', {
+        font: '64px Arial Black',
+        fill: '#fff',
+        strokeThickness: 4
+    });
+    dmgText.exists = false;
+    dmgText.tween = game.add.tween(dmgText)
+        .to({
+            alpha: 0,
+            y: 100,
+            x: this.game.rnd.integerInRange(100, 700)
+        }, 1000, Phaser.Easing.Cubic.Out);
+ 
+    dmgText.tween.onComplete.add(function(text, tween) {
+        text.kill();
+    });
+    this.dmgTextPool.add(dmgText);
+}
+    var dmgText = this.dmgTextPool.getFirstExists(false);
+if (dmgText) {
+    dmgText.text = this.player.clickDmg;
+    dmgText.reset(pointer.positionDown.x, pointer.positionDown.y);
+    dmgText.alpha = 1;
+    dmgText.tween.start();
+}
   },
   render: function(){
       game.debug.text('Adventure Awaits!', 250, 290);
@@ -79,6 +122,7 @@ monsterData.forEach(function(data) {
     this.currentMonster.position.set(1000, this.game.world.centerY);
     this.currentMonster = this.monsters.getRandom();
     this.currentMonster.position.set(this.game.world.centerX + 100, this.game.world.centerY)
+    this.currentMonster.damage(this.player.clickDmg);
   }
 });
 
