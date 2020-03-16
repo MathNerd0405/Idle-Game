@@ -1,12 +1,9 @@
 {
-  "name": "Hello World!",
-  "description": "My first Chrome App.",
-  "version": "0.1",
-  "manifest_version": 2,
+  "name": "The Click for Phat Lootz!",
+  "version": "1.0.0",
   "app": {
     "background": {
-      "scripts": ["background.js"]
+      "scripts": ["chrome-app-host.js"]
     }
-  },
-  "icons": { "16": "calculator-16.png", "128": "calculator-128.png" }
+  }
 }
